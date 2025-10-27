@@ -59,6 +59,7 @@ class MainWindow(QWidget):
             product_id, name, price = prod
             item = QListWidgetItem()
             widget = ProductListItem(name, price, self.delete_product)
+            widget.price_changed.connect(self.update_product_price)
             item.setSizeHint(widget.sizeHint())
             self.product_list.addItem(item)
             self.product_list.setItemWidget(item, widget)
@@ -104,3 +105,21 @@ class MainWindow(QWidget):
         row_index = self.product_list.row(item)
         product_id,name,price=self.products[row_index]
         self.table.add_product(name,price)
+
+
+    def update_product_price(self, name, new_price):
+        """Update price in DB and invoice table when edited in product list."""
+        conn = get_connection()
+        c = conn.cursor()
+        c.execute("UPDATE products SET price=? WHERE LOWER(name)=LOWER(?)", (new_price, name.lower()))
+        conn.commit()
+        conn.close()
+
+        # Update price in table if product already there
+        for row in range(self.table.rowCount()):
+            item = self.table.item(row, 0)
+            if item and item.text().lower() == name.lower():
+                self.table.item(row, 2).setText(f"{new_price:.2f}")
+
+        # Recalculate totals
+        self.table.update_totals()
