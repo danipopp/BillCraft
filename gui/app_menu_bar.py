@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QMenuBar, QMenu, QAction, QMessageBox
+from PySide6.QtWidgets import QMenuBar, QMenu, QMessageBox
+from PySide6.QtGui import QAction
 from PySide6.QtCore import Signal
 
 
