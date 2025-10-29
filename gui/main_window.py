@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt
 from .product_list import ProductListItem
 from .invoice_table import InvoiceTable
 from .app_menu_bar import AppMenuBar
+from pdf.invoice_generator import InvoiceGenerator
 from database.db import get_connection
 
 
@@ -65,6 +66,9 @@ class MainWindow(QMainWindow):
         # ---- Load data ----
         self.load_products()
 
+        # ---- Invoice Generator ----
+        self.invoice_generator = InvoiceGenerator()
+
     # -------------------------------------------------------------
     # MENU SIGNAL CONNECTIONS
     # -------------------------------------------------------------
@@ -85,7 +89,10 @@ class MainWindow(QMainWindow):
         self.table.update_totals()
 
     def save_invoice(self):
-        QMessageBox.information(self, "Speichern", "Rechnung gespeichert (Demo).")
+        self.invoice_generator.generate_invoice(self.table, self)
+
+    def load_invoice(self):
+        self.invoice_generator.load_invoice(self.table, self)
 
     def import_products(self):
         QMessageBox.information(self, "Importieren", "Produktimport folgt.")
