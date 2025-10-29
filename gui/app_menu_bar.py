@@ -9,6 +9,7 @@ class AppMenuBar(QMenuBar):
     # Define signals so MainWindow can react
     new_invoice = Signal()
     save_invoice = Signal()
+    load_invoice = Signal()
     exit_app = Signal()
     refresh_products = Signal()
     import_products = Signal()
@@ -29,6 +30,10 @@ class AppMenuBar(QMenuBar):
         save_invoice_action = QAction("Speichern", self)
         save_invoice_action.triggered.connect(self.save_invoice.emit)
         file_menu.addAction(save_invoice_action)
+
+        load_invoice_action = QAction("Load Invoice", self)
+        load_invoice_action.triggered.connect(self.load_invoice.emit)
+        file_menu.addAction(load_invoice_action)
 
         file_menu.addSeparator()
 

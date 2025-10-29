@@ -75,6 +75,7 @@ class MainWindow(QMainWindow):
     def _connect_menu_signals(self):
         self.menu_bar.new_invoice.connect(self.new_invoice)
         self.menu_bar.save_invoice.connect(self.save_invoice)
+        self.menu_bar.load_invoice.connect(self.load_invoice)
         self.menu_bar.exit_app.connect(self.close)
         self.menu_bar.refresh_products.connect(self.load_products)
         self.menu_bar.import_products.connect(self.import_products)
