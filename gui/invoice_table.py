@@ -104,13 +104,20 @@ class InvoiceTable(QTableWidget):
     def update_totals(self):
         total = 0.0
         for row in range(self.rowCount()):
+            # --- Quantity ---
             qty_widget = self.cellWidget(row, 1)
-            qty = qty_widget.value() if qty_widget else 1
-            price = float(self.item(row, 2).text())
-            line_sum = qty * price
-            if row in self._sum_labels:
-                self._sum_labels[row].setText(f"{line_sum:.2f}")
-            total += line_sum
+            qty = qty_widget.value() if qty_widget else 0
+
+            # --- Single price ---
+            price_widget = self.cellWidget(row,2)
+            price = price_widget.value() if price_widget else 0
+            
+            # --- Sum ---
+            sum_value = qty * price
+            sum_item = self.item(row,3)
+            if sum_item:
+                sum_item.setText(f"{sum_value:.2f}")
+            total += sum_value
         if hasattr(self, 'total_label'):
             self.total_label.setText(f"Gesamtsumme: {total:.2f} €")
 
