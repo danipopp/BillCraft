@@ -1,4 +1,5 @@
 import json
+from PySide6.QtCore import Qt
 from datetime import date
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QSpinBox, QDoubleSpinBox, QTableWidgetItem
 from reportlab.lib.pagesizes import A4
@@ -170,7 +171,7 @@ class InvoiceGenerator:
             table.setCellWidget(row, 2, price_box)
 
             sum_item = QTableWidgetItem(f"{item['sum']:.2f}")
-            sum_item.setFlags(sum_item.flags() & ~0x2)  # non-editable
+            sum_item.setFlags(sum_item.flags() & ~Qt.ItemIsEditable)  # non-editable
             table.setItem(row, 3, sum_item)
 
             qty_box.valueChanged.connect(lambda _: self._update_row_sum(table, row))

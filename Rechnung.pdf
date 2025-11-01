@@ -1,0 +1,76 @@
+%PDF-1.3
+%“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
+1 0 obj
+<<
+/F1 2 0 R /F2 3 0 R
+>>
+endobj
+2 0 obj
+<<
+/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+>>
+endobj
+3 0 obj
+<<
+/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+>>
+endobj
+4 0 obj
+<<
+/Contents 8 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 7 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+5 0 obj
+<<
+/PageMode /UseNone /Pages 7 0 R /Type /Catalog
+>>
+endobj
+6 0 obj
+<<
+/Author (anonymous) /CreationDate (D:20251101132918+01'00') /Creator (ReportLab PDF Library - www.reportlab.com) /Keywords () /ModDate (D:20251101132918+01'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
+  /Subject (unspecified) /Title (untitled) /Trapped /False
+>>
+endobj
+7 0 obj
+<<
+/Count 1 /Kids [ 4 0 R ] /Type /Pages
+>>
+endobj
+8 0 obj
+<<
+/Filter [ /ASCII85Decode /FlateDecode ] /Length 596
+>>
+stream
+Gasamhf$st&:WMDEBGAG4IA5-Cr^lj)\WiXLdjMg,n.75D,MfWKZ%5Yj0@,`8K1[0U=8ks^9c,g(k*2!+"MjP3P>A_5SEW&&.=6j1Yh(nYqCT$X?.SdFo!Io;.RZXLCY)pXbOK?lYldmWUB%/4>[*FOVX&YK)FH*BJ@=PH;;mj&fFPG]Ihm@\cF'B,U?!1W[ML/aq2FPMNV?@LS;csS="t0;OtUmrQfB9N`-WT[lRoEnb(U3i11IJ`flGN2YA0,KAsJ(LrEhnb#tsk>W/D7qa4MoA(3Pr:HFFf,H*lNE6RO/g('E%BB.to"7+/Z[?H2p6?K+5K,fF1IFJ!Z]@o)A3ADOt6:k["RBR+kd"[9_'StdoNFDHSo3D2JZ.4GkHG5I2;W8DGL:@nMA(6`^0kq&e'D2bt\K@9B_!mcKO4RQU5GgA6ogT/MaR:.9>uc/pn85ePRHg#jj5)EM9d`l-'Z@Zqg48X!W.*]S0DcJ,pU41/1eNW))oW&9@SAZQmO8eZR_qPHThnM;A.*n^[OKgl%B*[3GXrfi@,;s1OTO4Y.._lIGJ8gdZJNHu:mN'qo[JOdGZhId[sF6_^suegZqcA~>endstream
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000073 00000 n 
+0000000114 00000 n 
+0000000221 00000 n 
+0000000333 00000 n 
+0000000536 00000 n 
+0000000604 00000 n 
+0000000900 00000 n 
+0000000959 00000 n 
+trailer
+<<
+/ID 
+[<77c11f3d393752a089929da63bbe6aea><77c11f3d393752a089929da63bbe6aea>]
+% ReportLab generated PDF document -- digest (http://www.reportlab.com)
+
+/Info 6 0 R
+/Root 5 0 R
+/Size 9
+>>
+startxref
+1645
+%%EOF
+
+%%INVOICE_JSON_START%%{"date": "2025-11-01", "items": [{"product": "Geruestfirma", "quantity": 1, "price": 0.0, "sum": 0.0}, {"product": "test2", "quantity": 1, "price": 0.0, "sum": 0.0}]}%%INVOICE_JSON_END%%
