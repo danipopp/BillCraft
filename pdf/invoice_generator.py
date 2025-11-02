@@ -5,17 +5,22 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QSpinBox, QDoubleSpinBox
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
 import os
-
+import io
 
 class InvoiceGenerator:
     def __init__(self):
         self.last_folder = os.getcwd()
         self.logo_path = None
+        self.logo_bytes = None
 
     def set_logo(self, path):
         self.logo_path = path
+
+    def set_logo_bytes(self, data):
+        self.logo_bytes = data
 
     # ----------------------------------------------------------
     # GENERATE PDF INVOICE
@@ -39,7 +44,10 @@ class InvoiceGenerator:
         logo_width = 35 * mm
 
         # --- Logo path
-        if self.logo_path and os.path.exists(self.logo_path):
+        if self.logo_bytes:
+            img = ImageReader(io.BytesIO(self.logo_bytes))
+            pdf.drawImage(img, width - logo_width - 25 * mm, y - 10 * mm, width=logo_width, preserveAspectRatio=True)
+        elif self.logo_path and os.path.exists(self.logo_path):
             pdf.drawImage(self.logo_path, width - logo_width - 25 * mm, y - 10 * mm, width=logo_width, preserveAspectRatio=True)
 
         # --- Comapny Info (Top left)

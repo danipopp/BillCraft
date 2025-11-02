@@ -59,5 +59,12 @@ def create_tables():
     )
     ''')
 
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value BLOB
+        )
+    ''')
+
     conn.commit()
     conn.close()

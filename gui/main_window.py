@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
+    QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QFileDialog,
     QListWidget, QListWidgetItem, QPushButton, QLabel,
     QLineEdit, QMessageBox, QButtonGroup, QRadioButton, QComboBox
 )
@@ -98,10 +98,10 @@ class MainWindow(QMainWindow):
         # ---- Load data ----
         self.load_products()
         self.load_customers()
-        self.logo_path = '/Users/danielpopp/Downloads/liebherr-logo-1400x700.jpg'
 
         # ---- Invoice Generator ----
         self.invoice_generator = InvoiceGenerator()
+        self._load_logo_from_db()
 
     # -------------------------------------------------------------
     # MENU SIGNAL CONNECTIONS
@@ -256,3 +256,32 @@ class MainWindow(QMainWindow):
         self.selected_customer = data
         print(f"✅ Selected customer: {data['name']} (ID: {data['id']})")
 
+
+    def choose_logo(self):
+        """Let the user choose an image and store it in DB as bytes."""
+        file_path, _ = QFileDialog.getOpenFileName(self, "Logo auswählen", "", "Bilder (*.png *.jpg *.jpeg *.bmp)")
+        if not file_path:
+            return
+
+        with open(file_path, "rb") as f:
+            image_data = f.read()
+
+        conn = get_connection()
+        c = conn.cursor()
+        c.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('logo', ?)", (image_data,))
+        conn.commit()
+        conn.close()
+
+        self.invoice_generator.set_logo_bytes(image_data)
+        QMessageBox.information(self, "Gespeichert", "Das Logo wurde in der Datenbank gespeichert.")
+
+    def _load_logo_from_db(self):
+        """Load logo bytes from DB into memory on startup."""
+        conn = get_connection()
+        c = conn.cursor()
+        c.execute("SELECT value FROM settings WHERE key='logo'")
+        row = c.fetchone()
+        conn.close()
+
+        if row and row[0]:
+            self.invoice_generator.set_logo_bytes(row[0])
