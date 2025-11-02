@@ -63,11 +63,16 @@ class InvoiceGenerator:
         pdf.drawString(25 * mm, y - 10 * mm, client_address)
         pdf.drawString(25 * mm, y - 15 * mm, client_zip_city)
 
+        pdf.setFont("Helvetica", 10)
+        pdf.drawRightString(width - 25 * mm, y, f"Kundennr.: {client_id}")
+        pdf.drawRightString(width - 25 * mm, y - 6 * mm, f"Datum: {date.today().strftime('%d.%m.%Y')}")
 
-        # Header
+        y -= 35 * mm
+
+        # --- Header ---
         pdf.setFont("Helvetica-Bold", 16)
         pdf.drawString(25 * mm, y, "Rechnung Nr. 1001")
-        y -= 10 * mm
+        y -= 15 * mm
 
         pdf.setFont("Helvetica", 10)
         pdf.drawString(25 * mm, y, f"Datum: {date.today().strftime('%d.%m.%Y')}")
