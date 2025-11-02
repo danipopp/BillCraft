@@ -41,35 +41,32 @@ class InvoiceGenerator:
         # --- Company Header
         company_name = "Musterfirma GmbH"
         company_address = "Hauptstraße 12, 12345 Musterstadt"
-        logo_width = 35 * mm
 
         # --- Logo path
-        if self.logo_bytes:
-            try:
-                # Wrap bytes in a buffer and create ImageReader
-                buffer = io.BytesIO(self.logo_bytes)
-                img = ImageReader(buffer)
+        logo_width = 35 * mm
+        margin = 25 * mm  # distance from top-right corner
 
-                # Force consistent size and Y coordinate
-                img_width = logo_width
-                img_height = img_width  # square or adjust later if you want
-                x_pos = width - img_width - 25 * mm
-                y_pos = height - img_height - 25 * mm
+        def draw_logo(img_source):
+            # Use ImageReader to get image dimensions
+            img = ImageReader(img_source)
+            iw, ih = img.getSize()  # width and height in pixels
+            aspect = ih / iw        # height/width ratio
 
-                pdf.drawImage(
-                    img,
-                    x_pos,
-                    y_pos,
-                    width=img_width,
-                    height=img_height,
-                    preserveAspectRatio=True,
-                    mask='auto'
-                )
+            # calculate height keeping aspect ratio
+            logo_height = logo_width * aspect
 
-            except Exception as e:
-                print(f"⚠️ Error loading logo from bytes: {e}")
-        elif self.logo_path and os.path.exists(self.logo_path):
-            pdf.drawImage(self.logo_path, width - logo_width - 25 * mm, y - 10 * mm, width=logo_width, preserveAspectRatio=True)
+            x_pos = A4[0] - logo_width - margin  # top-right corner X
+            y_pos = A4[1] - logo_height - margin  # top-right corner Y
+
+            pdf.drawImage(img_source, x_pos, y_pos, width=logo_width, height=logo_height, mask='auto')
+
+        try:
+            if self.logo_bytes:
+                draw_logo(ImageReader(io.BytesIO(self.logo_bytes)))
+            elif self.logo_path and os.path.exists(self.logo_path):
+                draw_logo(self.logo_path)
+        except Exception as e:
+            print(f"⚠️ Error loading logo from bytes: {e}")
 
         # --- Comapny Info (Top left)
         pdf.setFont("Helvetica-Bold", 12)
