@@ -8,8 +8,8 @@ class CustomerWindow(QWidget):
         self.setMinimumSize(700, 500)
 
         layout = QVBoxLayout(self)
-        self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Name", "E-Mail", "Telefon", "Stadt", "Land"])
+        self.table = QTableWidget(0, 6)
+        self.table.setHorizontalHeaderLabels(["Id","Name", "E-Mail", "Telefon", "Stadt", "Land"])
         layout.addWidget(self.table)
 
         btn_layout = QHBoxLayout()
@@ -28,8 +28,9 @@ class CustomerWindow(QWidget):
         for cust in customers:
             row = self.table.rowCount()
             self.table.insertRow(row)
-            self.table.setItem(row, 0, QTableWidgetItem(cust["name"]))
-            self.table.setItem(row, 1, QTableWidgetItem(cust["email"]))
-            self.table.setItem(row, 2, QTableWidgetItem(cust["phone"]))
-            self.table.setItem(row, 3, QTableWidgetItem(cust["city"]))
-            self.table.setItem(row, 4, QTableWidgetItem(cust["country"]))
+            self.table.setItem(row, 0, QTableWidgetItem(cust["id"]))
+            self.table.setItem(row, 1, QTableWidgetItem(cust["name"]))
+            self.table.setItem(row, 2, QTableWidgetItem(cust["email"]))
+            self.table.setItem(row, 3, QTableWidgetItem(cust["phone"]))
+            self.table.setItem(row, 4, QTableWidgetItem(cust["city"]))
+            self.table.setItem(row, 5, QTableWidgetItem(cust["country"]))

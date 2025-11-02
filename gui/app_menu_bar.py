@@ -14,6 +14,7 @@ class AppMenuBar(QMenuBar):
     refresh_products = Signal()
     import_products = Signal()
     export_products = Signal()
+    customer_window = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -59,3 +60,12 @@ class AppMenuBar(QMenuBar):
         product_menu.addAction(export_action)
 
         self.addMenu(product_menu)
+
+        # --- Customer menu ---
+        customer_menu = QMenu("Customer", self)
+
+        custumer_action = QAction("CustomerWindow",self)
+        custumer_action.triggered.connect(self.customer_window.emit)
+        customer_menu.addAction(custumer_action)
+
+        self.addMenu(customer_menu)

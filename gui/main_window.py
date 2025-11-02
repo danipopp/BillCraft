@@ -9,6 +9,7 @@ from .invoice_table import InvoiceTable
 from .app_menu_bar import AppMenuBar
 from pdf.invoice_generator import InvoiceGenerator
 from database.db import get_connection
+from gui.custumer_window import CustomerWindow
 
 
 class MainWindow(QMainWindow):
@@ -80,6 +81,7 @@ class MainWindow(QMainWindow):
         self.menu_bar.refresh_products.connect(self.load_products)
         self.menu_bar.import_products.connect(self.import_products)
         self.menu_bar.export_products.connect(self.export_products)
+        self.menu_bar.customer_window.connect(self.open_customer_window)
 
     # -------------------------------------------------------------
     # MENU ACTION HANDLERS
@@ -94,6 +96,10 @@ class MainWindow(QMainWindow):
 
     def load_invoice(self):
         self.invoice_generator.load_invoice(self.table, self)
+
+    def open_customer_window(self):
+        self.customer_window = CustomerWindow()
+        self.customer_window.show()
 
     def import_products(self):
         QMessageBox.information(self, "Importieren", "Produktimport folgt.")
