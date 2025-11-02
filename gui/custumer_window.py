@@ -1,4 +1,3 @@
-# gui/customer_window.py
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QHBoxLayout
 from database.custumer_repository import CustomerRepository
 
