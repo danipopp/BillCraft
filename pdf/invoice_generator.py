@@ -20,7 +20,7 @@ class InvoiceGenerator:
     # ----------------------------------------------------------
     # GENERATE PDF INVOICE
     # ----------------------------------------------------------
-    def generate_invoice(self, table, parent=None):
+    def generate_invoice(self, table, customer=None, parent=None):
         file_path, _ = QFileDialog.getSaveFileName(
             parent, "Rechnung speichern", os.path.join(self.last_folder, "Rechnung.pdf"), "PDF-Dateien (*.pdf)"
         )
@@ -33,6 +33,37 @@ class InvoiceGenerator:
 
         y = height - 50 * mm
 
+        # --- Company Header
+        company_name = "Musterfirma GmbH"
+        company_address = "Hauptstraße 12, 12345 Musterstadt"
+        logo_width = 35 * mm
+
+        # --- Logo path
+        if self.logo_path and os.path.exists(self.logo_path):
+            pdf.drawImage(self.logo_path, width - logo_width - 25 * mm, y - 10 * mm, width=logo_width, preserveAspectRatio=True)
+
+        # --- Comapny Info (Top left)
+        pdf.setFont("Helvetica-Bold", 12)
+        pdf.drawString(25 * mm, y, company_name)
+        pdf.setFont("Helvetica", 10)
+        pdf.drawString(25 * mm, y - 5 * mm, company_address)
+        y -= 20 * mm
+
+        # --- Client Info ---
+        client_company = "Kunde GmbH"
+        client_name = "Max Mustermann"
+        client_address = "Beispielstraße 45"
+        client_zip_city = "54321 Beispielstadt"
+        client_id = "C-1024"
+
+        pdf.setFont("Helvetica-Bold", 11)
+        pdf.drawString(25 * mm, y, client_company)
+        pdf.setFont("Helvetica", 10)
+        pdf.drawString(25 * mm, y - 5 * mm, client_name)
+        pdf.drawString(25 * mm, y - 10 * mm, client_address)
+        pdf.drawString(25 * mm, y - 15 * mm, client_zip_city)
+
+
         # Header
         pdf.setFont("Helvetica-Bold", 16)
         pdf.drawString(25 * mm, y, "Rechnung Nr. 1001")
@@ -41,10 +72,6 @@ class InvoiceGenerator:
         pdf.setFont("Helvetica", 10)
         pdf.drawString(25 * mm, y, f"Datum: {date.today().strftime('%d.%m.%Y')}")
         y -= 15 * mm
-
-        # Logo
-        if self.logo_path and os.path.exists(self.logo_path):
-            pdf.drawImage(self.logo_path, width - 60 * mm, height - 40 * mm, width=40 * mm, preserveAspectRatio=True)
 
         # Table Header
         pdf.setFont("Helvetica-Bold", 10)
@@ -108,7 +135,9 @@ class InvoiceGenerator:
         y -= 10 * mm
 
         pdf.setFont("Helvetica", 9)
+        pdf.setFillColor(colors.grey)
         pdf.drawString(25 * mm, y, "Vielen Dank für Ihren Einkauf!")
+        pdf.setFillColor(colors.black)
 
         pdf.showPage()
         pdf.save()
