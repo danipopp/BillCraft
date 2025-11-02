@@ -115,6 +115,7 @@ class MainWindow(QMainWindow):
         self.menu_bar.import_products.connect(self.import_products)
         self.menu_bar.export_products.connect(self.export_products)
         self.menu_bar.customer_window.connect(self.open_customer_window)
+        self.menu_bar.select_logo.connect(self.choose_logo)
 
     # -------------------------------------------------------------
     # MENU ACTION HANDLERS

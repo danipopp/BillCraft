@@ -45,8 +45,29 @@ class InvoiceGenerator:
 
         # --- Logo path
         if self.logo_bytes:
-            img = ImageReader(io.BytesIO(self.logo_bytes))
-            pdf.drawImage(img, width - logo_width - 25 * mm, y - 10 * mm, width=logo_width, preserveAspectRatio=True)
+            try:
+                # Wrap bytes in a buffer and create ImageReader
+                buffer = io.BytesIO(self.logo_bytes)
+                img = ImageReader(buffer)
+
+                # Force consistent size and Y coordinate
+                img_width = logo_width
+                img_height = img_width  # square or adjust later if you want
+                x_pos = width - img_width - 25 * mm
+                y_pos = height - img_height - 25 * mm
+
+                pdf.drawImage(
+                    img,
+                    x_pos,
+                    y_pos,
+                    width=img_width,
+                    height=img_height,
+                    preserveAspectRatio=True,
+                    mask='auto'
+                )
+
+            except Exception as e:
+                print(f"⚠️ Error loading logo from bytes: {e}")
         elif self.logo_path and os.path.exists(self.logo_path):
             pdf.drawImage(self.logo_path, width - logo_width - 25 * mm, y - 10 * mm, width=logo_width, preserveAspectRatio=True)
 
