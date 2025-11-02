@@ -32,7 +32,7 @@ endobj
 endobj
 6 0 obj
 <<
-/Author (anonymous) /CreationDate (D:20251101132918+01'00') /Creator (ReportLab PDF Library - www.reportlab.com) /Keywords () /ModDate (D:20251101132918+01'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
+/Author (anonymous) /CreationDate (D:20251102084404+01'00') /Creator (ReportLab PDF Library - www.reportlab.com) /Keywords () /ModDate (D:20251102084404+01'00') /Producer (ReportLab PDF Library - www.reportlab.com) 
   /Subject (unspecified) /Title (untitled) /Trapped /False
 >>
 endobj
@@ -43,10 +43,10 @@ endobj
 endobj
 8 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 596
+/Filter [ /ASCII85Decode /FlateDecode ] /Length 666
 >>
 stream
-Gasamhf$st&:WMDEBGAG4IA5-Cr^lj)\WiXLdjMg,n.75D,MfWKZ%5Yj0@,`8K1[0U=8ks^9c,g(k*2!+"MjP3P>A_5SEW&&.=6j1Yh(nYqCT$X?.SdFo!Io;.RZXLCY)pXbOK?lYldmWUB%/4>[*FOVX&YK)FH*BJ@=PH;;mj&fFPG]Ihm@\cF'B,U?!1W[ML/aq2FPMNV?@LS;csS="t0;OtUmrQfB9N`-WT[lRoEnb(U3i11IJ`flGN2YA0,KAsJ(LrEhnb#tsk>W/D7qa4MoA(3Pr:HFFf,H*lNE6RO/g('E%BB.to"7+/Z[?H2p6?K+5K,fF1IFJ!Z]@o)A3ADOt6:k["RBR+kd"[9_'StdoNFDHSo3D2JZ.4GkHG5I2;W8DGL:@nMA(6`^0kq&e'D2bt\K@9B_!mcKO4RQU5GgA6ogT/MaR:.9>uc/pn85ePRHg#jj5)EM9d`l-'Z@Zqg48X!W.*]S0DcJ,pU41/1eNW))oW&9@SAZQmO8eZR_qPHThnM;A.*n^[OKgl%B*[3GXrfi@,;s1OTO4Y.._lIGJ8gdZJNHu:mN'qo[JOdGZhId[sF6_^suegZqcA~>endstream
+Gasam9l&KK&A@7.9Fl]aLX"%lBQnMK8OK0\V%u)eU8D_H[3^GV;<Y4P88b/edFuS_bjaJYH#In^!;T.`pSA#fPf)m$!g8WuJ[EdcIt`[UWio'gXKQsoLH>C#YUEbBOlekVaB/Oi#rb)cbA5X/.sS&t&0f@ArseeEG>W74^$$oeb`Zp5^#FIf[,i=$'LY9^1rkLE,"9U#4K2ZXqeeV6H%V;-@?je^n9Xi0h)*Rp7>F`1N,PCnK`p7F_APJ)k[@cq%9lri/0s4a2GM_^><2/leAndHb%?N77J=iBI#aj&,Pd_S8$sqmhp0795r.aoPf?@i=eY:ZB7_+S+%+k=IC!21AW]MRH_Ft^a#oX.K=WHWNPX$M`+afh%aZ;%i)EX._6Z!c.s8@ansnk[gp#`?@5*%Z\s>Ija_2*s`+t=p-[spQEC*;C:IRKmNPV1;"C^d<',%cen/?r.UDr9Pi/KpWO'[H9.*t!o^P;JdoGZ/)7<P;9fX803n+J#NS@<&Ii$gM-mOmJBEt#3e(\>/(ZDJW14U*YTL%<A-p<0(RpYs;%04sB.NJQY?=\UGDlA_gC4g-V)C<cKC>K)K>79eqfB^0&lS,e8N*;>7[A1'jVD"D=W"=j,p#sGK02H4X&<#\plPgqX=H*+Wo]6$uYb7@G\\G?F1F+BP~>endstream
 endobj
 xref
 0 9
@@ -62,7 +62,7 @@ xref
 trailer
 <<
 /ID 
-[<77c11f3d393752a089929da63bbe6aea><77c11f3d393752a089929da63bbe6aea>]
+[<33c981d897b4f3dd52c8eebf5d19e2f3><33c981d897b4f3dd52c8eebf5d19e2f3>]
 % ReportLab generated PDF document -- digest (http://www.reportlab.com)
 
 /Info 6 0 R
@@ -70,7 +70,7 @@ trailer
 /Size 9
 >>
 startxref
-1645
+1715
 %%EOF
 
-%%INVOICE_JSON_START%%{"date": "2025-11-01", "items": [{"product": "Geruestfirma", "quantity": 1, "price": 0.0, "sum": 0.0}, {"product": "test2", "quantity": 1, "price": 0.0, "sum": 0.0}]}%%INVOICE_JSON_END%%
+%%INVOICE_JSON_START%%{"date": "2025-11-02", "items": [{"product": "Geruestfirma", "quantity": 3, "price": 27.0, "sum": 81.0}, {"product": "test2", "quantity": 2, "price": 7.0, "sum": 14.0}, {"product": "test3", "quantity": 1, "price": 4.0, "sum": 4.0}]}%%INVOICE_JSON_END%%

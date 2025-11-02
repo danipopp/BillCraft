@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (
-    QTableWidget, QTableWidgetItem, QSpinBox,
+    QTableWidget, QTableWidgetItem, QSpinBox, QDoubleSpinBox,
     QWidget, QHBoxLayout, QLabel, QAbstractItemView, QHeaderView
 )
 from PySide6.QtCore import Qt
@@ -39,13 +39,16 @@ class InvoiceTable(QTableWidget):
         qty_widget = QSpinBox()
         qty_widget.setValue(1)
         qty_widget.setMinimum(1)
-        qty_widget.valueChanged.connect(self.update_totals)
+        qty_widget.valueChanged.connect(lambda _: self.update_row_sum(row)) 
         self.setCellWidget(row, 1, qty_widget)
 
         # Single price
-        price_item = QTableWidgetItem(f"{price:.2f}")
-        price_item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        self.setItem(row, 2, price_item)
+        price_widget = QDoubleSpinBox() 
+        price_widget.setDecimals(2)
+        price_widget.setMinimum(0)
+        price_widget.setValue(price)
+        price_widget.valueChanged.connect(lambda _: self.update_row_sum(row))
+        self.setCellWidget(row, 2, price_widget)
 
         # Sum + delete button
         container = QWidget()
@@ -86,8 +89,8 @@ class InvoiceTable(QTableWidget):
             del self._sum_labels[row_index]
         if row_index in self._delete_buttons:
             del self._delete_buttons[row_index]
-        self.update_totals()
         self._rebuild_refs()
+        self.update_totals()
 
     def _rebuild_refs(self):
         """Fix references after deletion."""
@@ -96,28 +99,35 @@ class InvoiceTable(QTableWidget):
         for row in range(self.rowCount()):
             widget = self.cellWidget(row, 3)
             if widget:
-                new_sums[row] = widget.layout().itemAt(0).widget()
-                new_btns[row] = widget.layout().itemAt(2).widget()
+                layout = widget.layout()
+                new_sums[row] = layout.itemAt(0).widget()
+                new_btns[row] = layout.itemAt(layout.count() - 1).widget()
         self._sum_labels = new_sums
         self._delete_buttons = new_btns
 
-    def update_totals(self):
-        total = 0.0
-        for row in range(self.rowCount()):
-            # --- Quantity ---
-            qty_widget = self.cellWidget(row, 1)
-            qty = qty_widget.value() if qty_widget else 0
+    def update_row_sum(self, row):
+        """Recalculate a single row when quantity or price changes."""
+        qty_widget = self.cellWidget(row, 1)
+        price_widget = self.cellWidget(row, 2)
+        sum_label = self._sum_labels.get(row)
 
-            # --- Single price ---
-            price_widget = self.cellWidget(row,2)
-            price = price_widget.value() if price_widget else 0
-            
-            # --- Sum ---
-            sum_value = qty * price
-            sum_item = self.item(row,3)
-            if sum_item:
-                sum_item.setText(f"{sum_value:.2f}")
-            total += sum_value
+        if not qty_widget or not price_widget or not sum_label:
+            return
+
+        qty = qty_widget.value()
+        price = price_widget.value()
+        total = qty * price
+        sum_label.setText(f"{total:.2f}")
+        self.update_totals()
+
+    def update_totals(self):
+        """Sum all rows."""
+        total = 0.0
+        for row, label in self._sum_labels.items():
+            try:
+                total += float(label.text())
+            except ValueError:
+                pass
         if hasattr(self, 'total_label'):
             self.total_label.setText(f"Gesamtsumme: {total:.2f} €")
 
