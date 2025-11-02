@@ -1,25 +1,33 @@
+import sqlite3
 from database.db import get_connection
 
 class CustomerRepository:
     @staticmethod
-    def add_customer(name, email="", phone="", address="", zip_code="", city="", country="", tax_number="", notes=""):
+    def add_customer(customer_data):
         conn = get_connection()
         c = conn.cursor()
-        c.execute('''
-            INSERT INTO customers (name, email, phone, address, zip_code, city, country, tax_number, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (name, email, phone, address, zip_code, city, country, tax_number, notes))
+        c.execute("""
+            INSERT INTO customers (name, email, phone, city, country)
+            VALUES (?, ?, ?, ?, ?)
+        """, (
+            customer_data.get("name"),
+            customer_data.get("email"),
+            customer_data.get("phone"),
+            customer_data.get("city"),
+            customer_data.get("country")
+        ))
         conn.commit()
         conn.close()
 
     @staticmethod
     def get_all_customers():
         conn = get_connection()
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
-        c.execute("SELECT * FROM customers ORDER BY name ASC")
+        c.execute("SELECT id, name, email, phone, city, country FROM customers ORDER BY id DESC")
         rows = c.fetchall()
         conn.close()
-        return rows
+        return [dict(row) for row in rows]
 
     @staticmethod
     def get_customer_by_name(name):

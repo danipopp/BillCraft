@@ -9,15 +9,20 @@ def create_tables():
     conn = get_connection()
     c = conn.cursor()
 
-    # Customers
+    # Customers (final version)
     c.execute('''
-    CREATE TABLE IF NOT EXISTS customers (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        address TEXT,
-        email TEXT,
-        phone TEXT
-    )
+        CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT,
+            phone TEXT,
+            address TEXT,
+            zip_code TEXT,
+            city TEXT,
+            country TEXT,
+            tax_number TEXT,
+            notes TEXT
+        )
     ''')
 
     # Products
@@ -52,21 +57,6 @@ def create_tables():
         FOREIGN KEY(invoice_id) REFERENCES invoices(id),
         FOREIGN KEY(product_id) REFERENCES products(id)
     )
-    ''')
-
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS customers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT,
-            phone TEXT,
-            address TEXT,
-            zip_code TEXT,
-            city TEXT,
-            country TEXT,
-            tax_number TEXT,
-            notes TEXT
-        )
     ''')
 
     conn.commit()
