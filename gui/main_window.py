@@ -98,6 +98,7 @@ class MainWindow(QMainWindow):
         # ---- Load data ----
         self.load_products()
         self.load_customers()
+        self.logo_path = '/Users/danielpopp/Downloads/liebherr-logo-1400x700.jpg'
 
         # ---- Invoice Generator ----
         self.invoice_generator = InvoiceGenerator()
