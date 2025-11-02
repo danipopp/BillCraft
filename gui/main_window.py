@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QListWidget, QListWidgetItem, QPushButton, QLabel,
-    QLineEdit, QMessageBox
+    QLineEdit, QMessageBox, QButtonGroup, QRadioButton, QComboBox
 )
 from PySide6.QtCore import Qt
 from .product_list import ProductListItem
@@ -55,6 +55,37 @@ class MainWindow(QMainWindow):
         self.table.total_label.setAlignment(Qt.AlignRight)
         right_layout.addWidget(self.table.total_label)
 
+
+        # ---- Customer selection ----
+        customer_select_layout = QVBoxLayout()
+        customer_label = QLabel("Kunde auswählen:")
+        customer_select_layout.addWidget(customer_label)
+
+        self.customer_sort_group = QButtonGroup(self)
+        self.sort_by_id = QRadioButton("Sortieren nach ID")
+        self.sort_by_name = QRadioButton("Sortieren nach Name")
+        self.sort_by_name.setChecked(True)
+
+        self.customer_sort_group.addButton(self.sort_by_id)
+        self.customer_sort_group.addButton(self.sort_by_name)
+
+        sort_buttons_layout = QHBoxLayout()
+        sort_buttons_layout.addWidget(self.sort_by_id)
+        sort_buttons_layout.addWidget(self.sort_by_name)
+
+        self.customer_combo = QComboBox()
+        self.customer_combo.setPlaceholderText("Kunde auswählen...")
+
+        customer_select_layout.addLayout(sort_buttons_layout)
+        customer_select_layout.addWidget(self.customer_combo)
+
+        right_layout.addLayout(customer_select_layout)
+
+        # Connect sorting and selection
+        self.sort_by_id.toggled.connect(self.load_customers)
+        self.sort_by_name.toggled.connect(self.load_customers)
+        self.customer_combo.currentIndexChanged.connect(self.on_customer_selected)
+
         # Combine layouts
         main_layout.addLayout(left_layout, 3)
         main_layout.addLayout(right_layout, 5)
@@ -66,6 +97,7 @@ class MainWindow(QMainWindow):
 
         # ---- Load data ----
         self.load_products()
+        self.load_customers()
 
         # ---- Invoice Generator ----
         self.invoice_generator = InvoiceGenerator()
@@ -191,3 +223,35 @@ class MainWindow(QMainWindow):
         row_index = self.product_list.row(item)
         product_id, name, price = self.products[row_index]
         self.table.add_product(name, price)
+
+    def load_customers(self):
+        """Loads customers into the combo box, sorted by ID or Name."""
+        conn = get_connection()
+        c = conn.cursor()
+
+        if self.sort_by_id.isChecked():
+            c.execute("SELECT id, name FROM customers ORDER BY id ASC")
+        else:
+            c.execute("SELECT id, name FROM customers ORDER BY name COLLATE NOCASE ASC")
+
+        customers = c.fetchall()
+        conn.close()
+
+        self.customer_combo.blockSignals(True)
+        self.customer_combo.clear()
+
+        for cust_id, name in customers:
+            display_text = f"{cust_id} – {name}"
+            self.customer_combo.addItem(display_text, userData={"id": cust_id, "name": name})
+
+        self.customer_combo.blockSignals(False)
+
+    def on_customer_selected(self, index):
+        """Triggered when a customer is selected."""
+        data = self.customer_combo.itemData(index)
+        if not data:
+            self.selected_customer = None
+            return
+        self.selected_customer = data
+        print(f"✅ Selected customer: {data['name']} (ID: {data['id']})")
+
