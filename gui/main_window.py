@@ -175,7 +175,10 @@ class MainWindow(QMainWindow):
         for row in range(self.table.rowCount()):
             item = self.table.item(row, 0)
             if item and item.text().lower() == name.lower():
-                self.table.item(row, 2).setText(f"{new_price:.2f}")
+                price_widget = self.table.cellWidget(row, 2)
+                if price_widget:
+                    price_widget.setValue(new_price)
+                    break
         self.table.update_totals()
 
     def add_product_to_table(self, item):
