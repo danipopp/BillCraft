@@ -49,7 +49,7 @@ class InvoiceGenerator:
         # Table Header
         pdf.setFont("Helvetica-Bold", 10)
         col_positions = [25 * mm, 50 * mm, 110 * mm, 140 * mm, 170 * mm]
-        headers = ["Pos", "Produkt", "Menge", "Einzel (€)", "Gesamt (€)"]
+        headers = ["Pos", "Produkt", "Menge", "Einzel ( € )", "Gesamt ( € )"]
         for i, header in enumerate(headers):
             pdf.drawString(col_positions[i], y, header)
         y -= 5 * mm
