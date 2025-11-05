@@ -1,4 +1,5 @@
 import json
+import sqlite3
 from PySide6.QtCore import Qt
 from datetime import date
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QSpinBox, QDoubleSpinBox, QTableWidgetItem
@@ -11,10 +12,11 @@ import os
 import io
 
 class InvoiceGenerator:
-    def __init__(self):
+    def __init__(self, db_path = "invoices.db"):
         self.last_folder = os.getcwd()
         self.logo_path = None
         self.logo_bytes = None
+        self.db_path = db_path
 
     def set_logo(self, path):
         self.logo_path = path
@@ -75,19 +77,34 @@ class InvoiceGenerator:
         pdf.drawString(25 * mm, y - 5 * mm, company_address)
         y -= 20 * mm
 
-        # --- Client Info ---
-        client_company = "Kunde GmbH"
-        client_name = "Max Mustermann"
-        client_address = "Beispielstraße 45"
-        client_zip_city = "54321 Beispielstadt"
-        client_id = "C-1024"
+        # --- Load Customer Data ---
+        if customer and "id" in customer:
+            full_customer = self.get_customer_by_id(customer["id"])
+        else:
+            full_customer = None
+
+        if full_customer:
+            client_company = full_customer["name"]
+            client_name = full_customer["contact_name"]
+            client_address = full_customer["address"]
+            client_zip = full_customer["zip_code"]
+            client_city = full_customer["city"]
+            client_id = full_customer["id"]
+        else:
+            client_company = ""
+            client_name = ""
+            client_address = ""
+            client_zip = ""
+            client_city = ""
+            client_id = ""
 
         pdf.setFont("Helvetica-Bold", 11)
         pdf.drawString(25 * mm, y, client_company)
         pdf.setFont("Helvetica", 10)
         pdf.drawString(25 * mm, y - 5 * mm, client_name)
         pdf.drawString(25 * mm, y - 10 * mm, client_address)
-        pdf.drawString(25 * mm, y - 15 * mm, client_zip_city)
+        pdf.drawString(25 * mm, y - 15 * mm, client_zip)
+        pdf.drawString(25 * mm, y - 20 * mm, client_city)
 
         pdf.setFont("Helvetica", 10)
         pdf.drawRightString(width - 25 * mm, y, f"Kundennr.: {client_id}")
@@ -245,3 +262,30 @@ class InvoiceGenerator:
         if qty_widget and price_widget:
             total = qty_widget.value() * price_widget.value()
             table.item(row, 3).setText(f"{total:.2f}")
+
+    def get_customer_by_id(self, customer_id):
+        """Fetch full customer data from the database by ID."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT id, name, contact_name, address, zip_code, city 
+                FROM customers WHERE id = ?
+            """, (customer_id,))
+            row = cursor.fetchone()
+            conn.close()
+            if row:
+                return {
+                    "id": row[0],
+                    "name": row[1],
+                    "contact_name": row[2] or "",
+                    "address": row[3] or "",
+                    "zip_code": row[4] or "",
+                    "city": row[5] or ""
+                }
+            return None
+        except Exception as e:
+            print(f"⚠️ Error loading customer: {e}")
+            return None
+
+
