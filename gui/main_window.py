@@ -126,7 +126,13 @@ class MainWindow(QMainWindow):
         self.table.update_totals()
 
     def save_invoice(self):
-        self.invoice_generator.generate_invoice(self.table, self)
+        if not hasattr(self, 'selected_customer') or self.selected_customer is None:
+            QMessageBox.warning(self, "Fehler", "Bitte zuerst Kunde auswählen.")
+        self.invoice_generator.generate_invoice(
+            table = self.table, 
+            customer = self.selected_customer,
+            parent = self
+        )
 
     def load_invoice(self):
         self.invoice_generator.load_invoice(self.table, self)
@@ -251,12 +257,16 @@ class MainWindow(QMainWindow):
     def on_customer_selected(self, index):
         """Triggered when a customer is selected."""
         data = self.customer_combo.itemData(index)
-        if not data:
+        if data:
+            self.selected_customer = {
+                "id": data["id"],
+                "name": data["name"],
+                "contact_name": data.get("contact_name", ""),
+                "address": data.get("address", ""),
+                "zip_city": data.get("zip_city", "")
+            }
+        else:
             self.selected_customer = None
-            return
-        self.selected_customer = data
-        print(f"✅ Selected customer: {data['name']} (ID: {data['id']})")
-
 
     def choose_logo(self):
         """Let the user choose an image and store it in DB as bytes."""
