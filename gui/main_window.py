@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QFileDialog,
-    QListWidget, QListWidgetItem, QPushButton, QLabel,
-    QLineEdit, QMessageBox, QButtonGroup, QRadioButton, QComboBox
+    QListWidget, QListWidgetItem, QPushButton, QLabel, QCheckBox,
+    QLineEdit, QMessageBox, QButtonGroup, QRadioButton, QComboBox, QDoubleSpinBox
 )
 from PySide6.QtCore import Qt
 from .product_list import ProductListItem
@@ -81,6 +81,35 @@ class MainWindow(QMainWindow):
 
         right_layout.addLayout(customer_select_layout)
 
+        right_layout.addLayout(customer_select_layout)
+
+        # ---- Rabatt (Discount) section ----
+        rabatt_layout = QVBoxLayout()
+        rabatt_label = QLabel("Rabatt:")
+        rabatt_layout.addWidget(rabatt_label)
+
+        self.rabatt_checkbox = QCheckBox("Rabatt aktivieren")
+        rabatt_layout.addWidget(self.rabatt_checkbox)
+
+        self.rabatt_mode_combo = QComboBox()
+        self.rabatt_mode_combo.addItems(["Rabattbetrag (€)", "Zielbetrag (€ inkl. MwSt)"])
+        self.rabatt_mode_combo.setEnabled(False)
+        rabatt_layout.addWidget(self.rabatt_mode_combo)
+
+        self.rabatt_value_spin = QDoubleSpinBox()
+        self.rabatt_value_spin.setPrefix("€ ")
+        self.rabatt_value_spin.setMaximum(9999999.99)
+        self.rabatt_value_spin.setDecimals(2)
+        self.rabatt_value_spin.setValue(0.00)
+        self.rabatt_value_spin.setEnabled(False)
+        rabatt_layout.addWidget(self.rabatt_value_spin)
+
+        # Enable/disable rabatt controls when checkbox toggled
+        self.rabatt_checkbox.toggled.connect(self.rabatt_mode_combo.setEnabled)
+        self.rabatt_checkbox.toggled.connect(self.rabatt_value_spin.setEnabled)
+
+        right_layout.addLayout(rabatt_layout)
+
         # Connect sorting and selection
         self.sort_by_id.toggled.connect(self.load_customers)
         self.sort_by_name.toggled.connect(self.load_customers)
@@ -128,10 +157,20 @@ class MainWindow(QMainWindow):
     def save_invoice(self):
         if not hasattr(self, 'selected_customer') or self.selected_customer is None:
             QMessageBox.warning(self, "Fehler", "Bitte zuerst Kunde auswählen.")
+            return
+        
+        rabatt_mode = "Kein Rabatt"
+        rabatt_value = 0.0
+        if self.rabatt_checkbox.isChecked():
+            rabatt_mode = self.rabatt_mode_combo.currentText()
+            rabatt_value = self.rabatt_value_spin.value()
+
         self.invoice_generator.generate_invoice(
             table = self.table, 
             customer = self.selected_customer,
-            parent = self
+            parent = self,
+            rabatt_mode = rabatt_mode,
+            rabatt_value = rabatt_value
         )
 
     def load_invoice(self):

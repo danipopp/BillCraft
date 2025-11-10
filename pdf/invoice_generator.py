@@ -12,7 +12,7 @@ import os
 import io
 
 class InvoiceGenerator:
-    def __init__(self, db_path = "invoices.db"):
+    def __init__(self, db_path="invoices.db"):
         self.last_folder = os.getcwd()
         self.logo_path = None
         self.logo_bytes = None
@@ -27,7 +27,7 @@ class InvoiceGenerator:
     # ----------------------------------------------------------
     # GENERATE PDF INVOICE
     # ----------------------------------------------------------
-    def generate_invoice(self, table, customer=None, parent=None):
+    def generate_invoice(self, table, customer=None, parent=None, rabatt_mode=None, rabatt_value=0.0):  # 🟢 CHANGE: added rabatt params
         file_path, _ = QFileDialog.getSaveFileName(
             parent, "Rechnung speichern", os.path.join(self.last_folder, "Rechnung.pdf"), "PDF-Dateien (*.pdf)"
         )
@@ -46,20 +46,15 @@ class InvoiceGenerator:
 
         # --- Logo path
         logo_width = 35 * mm
-        margin = 25 * mm  # distance from top-right corner
+        margin = 25 * mm
 
         def draw_logo(img_source):
-            # Use ImageReader to get image dimensions
             img = ImageReader(img_source)
-            iw, ih = img.getSize()  # width and height in pixels
-            aspect = ih / iw        # height/width ratio
-
-            # calculate height keeping aspect ratio
+            iw, ih = img.getSize()
+            aspect = ih / iw
             logo_height = logo_width * aspect
-
-            x_pos = A4[0] - logo_width - margin  # top-right corner X
-            y_pos = A4[1] - logo_height - margin  # top-right corner Y
-
+            x_pos = A4[0] - logo_width - margin
+            y_pos = A4[1] - logo_height - margin
             pdf.drawImage(img_source, x_pos, y_pos, width=logo_width, height=logo_height, mask='auto')
 
         try:
@@ -70,14 +65,14 @@ class InvoiceGenerator:
         except Exception as e:
             print(f"⚠️ Error loading logo from bytes: {e}")
 
-        # --- Comapny Info (Top left)
+        # --- Company Info
         pdf.setFont("Helvetica-Bold", 12)
         pdf.drawString(25 * mm, y, company_name)
         pdf.setFont("Helvetica", 10)
         pdf.drawString(25 * mm, y - 5 * mm, company_address)
         y -= 20 * mm
 
-        # --- Load Customer Data ---
+        # --- Load Customer Data
         if customer and "id" in customer:
             full_customer = self.get_customer_by_id(customer["id"])
         else:
@@ -105,14 +100,19 @@ class InvoiceGenerator:
         pdf.drawString(25 * mm, y - 10 * mm, client_address)
         pdf.drawString(25 * mm, y - 15 * mm, client_zip)
         pdf.drawString(25 * mm, y - 20 * mm, client_city)
+        y -= 30 * mm
 
+        customer_number = str(client_id).zfill(12) if client_id else "000000000000"
+
+        pdf.setFont("Helvetica-Bold", 10)
+        pdf.drawString(width - 95 * mm, y, f"Kundennummer: ")
+        pdf.drawString(width - 45 * mm, y, f"Datum:")
         pdf.setFont("Helvetica", 10)
-        pdf.drawRightString(width - 25 * mm, y, f"Kundennr.: {client_id}")
-        pdf.drawRightString(width - 25 * mm, y - 6 * mm, f"Datum: {date.today().strftime('%d.%m.%Y')}")
+        pdf.drawString(width - 95 * mm, y - 5 * mm, f"{customer_number}")
+        pdf.drawString(width - 45 * mm, y - 5 * mm, f"{date.today().strftime('%d.%m.%Y')}")
+        y -= 20 * mm
 
-        y -= 35 * mm
-
-        # --- Header ---
+        # --- Header
         pdf.setFont("Helvetica-Bold", 16)
         pdf.drawString(25 * mm, y, "Rechnung Nr. 1001")
         y -= 15 * mm
@@ -121,7 +121,7 @@ class InvoiceGenerator:
         pdf.drawString(25 * mm, y, f"Datum: {date.today().strftime('%d.%m.%Y')}")
         y -= 15 * mm
 
-        # Table Header
+        # --- Table Header
         pdf.setFont("Helvetica-Bold", 10)
         col_positions = [25 * mm, 50 * mm, 110 * mm, 140 * mm, 170 * mm]
         headers = ["Pos", "Produkt", "Menge", "Einzel ( € )", "Gesamt ( € )"]
@@ -131,7 +131,7 @@ class InvoiceGenerator:
         pdf.line(25 * mm, y, width - 25 * mm, y)
         y -= 8 * mm
 
-        # Table Content
+        # --- Table Content
         pdf.setFont("Helvetica", 9)
         total_net = 0.0
         items = []
@@ -161,7 +161,28 @@ class InvoiceGenerator:
                 "sum": total
             })
 
-        # Totals
+        # 🟢 CHANGE: Add Rabatt as table line (before totals)
+        if rabatt_mode and rabatt_value > 0:
+            if "Rabattbetrag" in rabatt_mode:  # fixed amount €
+                rabatt_applied = rabatt_value
+            elif "Zielbetrag" in rabatt_mode:  # Zielbetrag brutto -> recalc netto
+                ziel_netto = rabatt_value / 1.19
+                rabatt_applied = max(0, total_net - ziel_netto)
+            else:
+                rabatt_applied = 0.0
+
+            if rabatt_applied > 0:
+                pdf.setFont("Helvetica-Bold", 9)
+                pdf.drawString(col_positions[1], y, "Rabatt")
+                pdf.drawRightString(col_positions[4] + 15 * mm, y, f"-{rabatt_applied:.2f}")
+                y -= 6 * mm
+                total_net = max(0, total_net - rabatt_applied)
+        else:
+            rabatt_applied = 0.0
+
+        # 🟢 CHANGE END
+
+        # --- Totals
         y -= 4 * mm
         pdf.line(25 * mm, y, width - 25 * mm, y)
         y -= 8 * mm
@@ -173,6 +194,7 @@ class InvoiceGenerator:
         pdf.drawRightString(width - 55 * mm, y, "Summe Netto:")
         pdf.drawRightString(width - 25 * mm, y, f"{total_net:.2f}")
         y -= 6 * mm
+
         pdf.drawRightString(width - 55 * mm, y, "MwSt (19%):")
         pdf.drawRightString(width - 25 * mm, y, f"{tax:.2f}")
         y -= 6 * mm
@@ -190,11 +212,18 @@ class InvoiceGenerator:
         pdf.showPage()
         pdf.save()
 
-        # Embed JSON Data
+        # 🟢 CHANGE: Include Rabatt in JSON for reloading
         json_data = json.dumps({
             "date": date.today().isoformat(),
-            "items": items
+            "items": items,
+            "rabatt": {
+                "mode": rabatt_mode,
+                "value": rabatt_value,
+                "applied": rabatt_applied
+            }
         })
+        # 🟢 CHANGE END
+
         with open(file_path, "ab") as f:
             f.write(b"\n%%INVOICE_JSON_START%%")
             f.write(json_data.encode("utf-8"))
@@ -229,7 +258,7 @@ class InvoiceGenerator:
             QMessageBox.warning(parent, "Fehler", "Ungültige JSON-Daten.")
             return
 
-        # Load into table
+        # --- Load into Table
         table.setRowCount(0)
         for item in data["items"]:
             row = table.rowCount()
@@ -248,7 +277,7 @@ class InvoiceGenerator:
             table.setCellWidget(row, 2, price_box)
 
             sum_item = QTableWidgetItem(f"{item['sum']:.2f}")
-            sum_item.setFlags(sum_item.flags() & ~Qt.ItemIsEditable)  # non-editable
+            sum_item.setFlags(sum_item.flags() & ~Qt.ItemIsEditable)
             table.setItem(row, 3, sum_item)
 
             qty_box.valueChanged.connect(lambda _: self._update_row_sum(table, row))
@@ -287,5 +316,3 @@ class InvoiceGenerator:
         except Exception as e:
             print(f"⚠️ Error loading customer: {e}")
             return None
-
-
