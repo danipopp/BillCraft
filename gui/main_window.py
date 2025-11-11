@@ -81,8 +81,6 @@ class MainWindow(QMainWindow):
 
         right_layout.addLayout(customer_select_layout)
 
-        right_layout.addLayout(customer_select_layout)
-
         # ---- Rabatt (Discount) section ----
         rabatt_layout = QVBoxLayout()
         rabatt_label = QLabel("Rabatt:")
@@ -175,6 +173,25 @@ class MainWindow(QMainWindow):
 
     def load_invoice(self):
         self.invoice_generator.load_invoice(self.table, self)
+
+        # Remove any "Rabatt" line from the table (should not be treated as a product)
+        for row in range(self.table.rowCount() - 1, -1, -1):
+            item = self.table.item(row, 0)
+            if item and "rabatt" in item.text().lower():
+                self.table.removeRow(row)
+
+        # Select the correct customer (if available)
+        if getattr(self.invoice_generator, "loaded_customer", None):
+            self.select_customer_in_combobox(self.invoice_generator.loaded_customer["id"])
+
+        # Apply Rabatt (if any), but always in "Rabattbetrag (€)" mode
+        if getattr(self.invoice_generator, "loaded_rabatt", None):
+            self.apply_rabatt(self.invoice_generator.loaded_rabatt)
+        else:
+            # Ensure default Rabatt mode
+            self.rabatt_checkbox.setChecked(False)
+            self.rabatt_mode_combo.setCurrentText("Rabattbetrag (€)")
+            self.rabatt_value_spin.setValue(0.00)
 
     def open_customer_window(self):
         self.customer_window = CustomerWindow()
@@ -335,3 +352,27 @@ class MainWindow(QMainWindow):
 
         if row and row[0]:
             self.invoice_generator.set_logo_bytes(row[0])
+
+    def select_customer_in_combobox(self, customer_id: int):
+        """Selects the customer with the given ID in the combo box."""
+        for index in range(self.customer_combo.count()):
+            data = self.customer_combo.itemData(index)
+            if data and data.get("id") == customer_id:
+                self.customer_combo.setCurrentIndex(index)
+                # Trigger the selection so self.selected_customer is updated
+                self.on_customer_selected(index)
+                return
+        # If no matching ID is found
+        QMessageBox.warning(self, "Kunde nicht gefunden", f"Kunde mit ID {customer_id} wurde nicht gefunden.")
+
+    def apply_rabatt(self, rabatt_data: dict):
+        """Applies the loaded discount data from the invoice file."""
+        if not rabatt_data:
+            self.rabatt_checkbox.setChecked(False)
+            self.rabatt_value_spin.setValue(0.00)
+            return
+
+        # Always use "Rabattbetrag (€)" mode when loading
+        self.rabatt_checkbox.setChecked(True)
+        self.rabatt_mode_combo.setCurrentText("Rabattbetrag (€)")
+        self.rabatt_value_spin.setValue(rabatt_data.get("value", 0.00))

@@ -8,7 +8,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
-import os
+from functools import partial
+import os   
 import io
 
 class InvoiceGenerator:
@@ -27,7 +28,7 @@ class InvoiceGenerator:
     # ----------------------------------------------------------
     # GENERATE PDF INVOICE
     # ----------------------------------------------------------
-    def generate_invoice(self, table, customer=None, parent=None, rabatt_mode=None, rabatt_value=0.0):  # 🟢 CHANGE: added rabatt params
+    def generate_invoice(self, table, customer=None, parent=None, rabatt_mode=None, rabatt_value=0.0):
         file_path, _ = QFileDialog.getSaveFileName(
             parent, "Rechnung speichern", os.path.join(self.last_folder, "Rechnung.pdf"), "PDF-Dateien (*.pdf)"
         )
@@ -161,7 +162,6 @@ class InvoiceGenerator:
                 "sum": total
             })
 
-        # 🟢 CHANGE: Add Rabatt as table line (before totals)
         if rabatt_mode and rabatt_value > 0:
             if "Rabattbetrag" in rabatt_mode:  # fixed amount €
                 rabatt_applied = rabatt_value
@@ -179,8 +179,6 @@ class InvoiceGenerator:
                 total_net = max(0, total_net - rabatt_applied)
         else:
             rabatt_applied = 0.0
-
-        # 🟢 CHANGE END
 
         # --- Totals
         y -= 4 * mm
@@ -212,17 +210,15 @@ class InvoiceGenerator:
         pdf.showPage()
         pdf.save()
 
-        # 🟢 CHANGE: Include Rabatt in JSON for reloading
         json_data = json.dumps({
             "date": date.today().isoformat(),
             "items": items,
             "rabatt": {
                 "mode": rabatt_mode,
-                "value": rabatt_value,
-                "applied": rabatt_applied
-            }
+                "value": rabatt_applied
+            },
+            "customer": customer
         })
-        # 🟢 CHANGE END
 
         with open(file_path, "ab") as f:
             f.write(b"\n%%INVOICE_JSON_START%%")
@@ -261,36 +257,42 @@ class InvoiceGenerator:
         # --- Load into Table
         table.setRowCount(0)
         for item in data["items"]:
-            row = table.rowCount()
-            table.insertRow(row)
-            table.setItem(row, 0, QTableWidgetItem(item["product"]))
+            name = item["product"]
+            qty = int(item["quantity"])
+            price = float(item["price"])
+            table.add_product(name, price)
 
-            qty_box = QSpinBox()
-            qty_box.setMinimum(0)
-            qty_box.setValue(int(item["quantity"]))
-            table.setCellWidget(row, 1, qty_box)
+            # Set correct quantity (since add_product defaults to 1)
+            last_row = table.rowCount() - 1
+            qty_box = table.cellWidget(last_row, 1)
+            if qty_box:
+                qty_box.setValue(qty)
 
-            price_box = QDoubleSpinBox()
-            price_box.setDecimals(2)
-            price_box.setMinimum(0)
-            price_box.setValue(float(item["price"]))
-            table.setCellWidget(row, 2, price_box)
 
-            sum_item = QTableWidgetItem(f"{item['sum']:.2f}")
-            sum_item.setFlags(sum_item.flags() & ~Qt.ItemIsEditable)
-            table.setItem(row, 3, sum_item)
+        rabatt_info = data.get("rabatt")
+        #if rabatt_info and rabatt_info.get("value", 0) > 0:
+        #    row = table.rowCount()
+        #    table.insertRow(row)
+        #    table.setItem(row, 0, QTableWidgetItem("Rabatt"))
+        #    table.setItem(row, 1, QTableWidgetItem(""))
+        #    table.setItem(row, 2, QTableWidgetItem(""))
+        #    table.setItem(row, 3, QTableWidgetItem(f"-{rabatt_info['value']:.2f}"))
 
-            qty_box.valueChanged.connect(lambda _: self._update_row_sum(table, row))
-            price_box.valueChanged.connect(lambda _: self._update_row_sum(table, row))
-
-        QMessageBox.information(parent, "Geladen", f"Rechnung erfolgreich geladen:\n{file_path}")
+        # Return Rabatt and Customer info for main window
+        self.loaded_rabatt = rabatt_info
+        self.loaded_customer = data.get("customer")
 
     def _update_row_sum(self, table, row):
+        """Recalculate a single row's total and update the Gesamtsumme label if available."""
         qty_widget = table.cellWidget(row, 1)
         price_widget = table.cellWidget(row, 2)
         if qty_widget and price_widget:
             total = qty_widget.value() * price_widget.value()
             table.item(row, 3).setText(f"{total:.2f}")
+        
+        # If your table has a method to update total sum (like table.update_totals), call it
+        if hasattr(table, "update_totals"):
+            table.update_totals()
 
     def get_customer_by_id(self, customer_id):
         """Fetch full customer data from the database by ID."""
