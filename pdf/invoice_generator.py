@@ -42,8 +42,8 @@ class InvoiceGenerator:
         y = height - 50 * mm
 
         # --- Company Header
-        company_name = "Musterfirma GmbH"
-        company_address = "Hauptstraße 12, 12345 Musterstadt"
+        company_name = "Daniel Popp GmbH | "
+        company_address = "Schiedenweg 22 | 88432 München"
 
         # --- Logo path
         logo_width = 35 * mm
@@ -66,12 +66,15 @@ class InvoiceGenerator:
         except Exception as e:
             print(f"⚠️ Error loading logo from bytes: {e}")
 
+        y -= 5 * mm
+
         # --- Company Info
-        pdf.setFont("Helvetica-Bold", 12)
-        pdf.drawString(25 * mm, y, company_name)
         pdf.setFont("Helvetica", 10)
-        pdf.drawString(25 * mm, y - 5 * mm, company_address)
-        y -= 20 * mm
+        pdf.setFillColor(colors.grey)
+        pdf.drawString(25 * mm, y, company_name + company_address)
+        pdf.setFillColor(colors.black)
+
+        y -= 15 * mm
 
         # --- Load Customer Data
         if customer and "id" in customer:
@@ -116,11 +119,8 @@ class InvoiceGenerator:
         # --- Header
         pdf.setFont("Helvetica-Bold", 16)
         pdf.drawString(25 * mm, y, "Rechnung Nr. 1001")
-        y -= 15 * mm
 
-        pdf.setFont("Helvetica", 10)
-        pdf.drawString(25 * mm, y, f"Datum: {date.today().strftime('%d.%m.%Y')}")
-        y -= 15 * mm
+        y -= 20 * mm
 
         # --- Table Header
         pdf.setFont("Helvetica-Bold", 10)
