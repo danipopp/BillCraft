@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QFileDialog,
-    QListWidget, QListWidgetItem, QPushButton, QLabel, QCheckBox,
+    QListWidget, QListWidgetItem, QPushButton, QLabel, QCheckBox, QScrollArea,
     QLineEdit, QMessageBox, QButtonGroup, QRadioButton, QComboBox, QDoubleSpinBox
 )
 from PySide6.QtCore import Qt
@@ -10,6 +10,7 @@ from .app_menu_bar import AppMenuBar
 from pdf.invoice_generator import InvoiceGenerator
 from database.db import get_connection
 from gui.custumer_window import CustomerWindow
+import csv
 
 
 class MainWindow(QMainWindow):
@@ -49,7 +50,16 @@ class MainWindow(QMainWindow):
         right_layout = QVBoxLayout()
         right_layout.addWidget(QLabel("Rechnungstabelle:"))
         self.table = InvoiceTable()
-        right_layout.addWidget(self.table)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+
+        container = QWidget()
+        container_layout = QVBoxLayout(container)
+        container_layout.addWidget(self.table)
+
+        scroll.setWidget(container)
+
+        right_layout.addWidget(scroll)
 
         self.table.total_label = QLabel("Gesamtsumme: 0.00 €")
         self.table.total_label.setAlignment(Qt.AlignRight)
@@ -143,6 +153,7 @@ class MainWindow(QMainWindow):
         self.menu_bar.export_products.connect(self.export_products)
         self.menu_bar.customer_window.connect(self.open_customer_window)
         self.menu_bar.select_logo.connect(self.choose_logo)
+        self.menu_bar.import_products.connect(self.import_products_from_csv)
 
     # -------------------------------------------------------------
     # MENU ACTION HANDLERS
@@ -376,3 +387,50 @@ class MainWindow(QMainWindow):
         self.rabatt_checkbox.setChecked(True)
         self.rabatt_mode_combo.setCurrentText("Rabattbetrag (€)")
         self.rabatt_value_spin.setValue(rabatt_data.get("value", 0.00))
+
+    def import_products_from_csv(self):
+        """Import products (name, price) from a CSV file."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Produkte aus CSV importieren",
+            "",
+            "CSV-Dateien (*.csv)"
+        )
+        if not file_path:
+            return
+
+        added_count = 0
+        try:
+            conn = get_connection()
+            c = conn.cursor()
+
+            with open(file_path, newline='', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                for row in reader:
+                    if len(row) != 2:
+                        continue
+                    name, price_str = row
+                    name = name.strip().strip('"')
+                    try:
+                        price = float(price_str)
+                    except ValueError:
+                        continue
+
+                    # Skip duplicates
+                    c.execute("SELECT COUNT(*) FROM products WHERE LOWER(name)=LOWER(?)", (name,))
+                    if c.fetchone()[0] == 0:
+                        c.execute("INSERT INTO products (name, price) VALUES (?, ?)", (name, price))
+                        added_count += 1
+
+            conn.commit()
+            conn.close()
+
+            self.load_products()
+            QMessageBox.information(
+                self,
+                "Import abgeschlossen",
+                f"{added_count} Produkte wurden erfolgreich hinzugefügt."
+            )
+
+        except Exception as e:
+            QMessageBox.critical(self, "Fehler beim Import", f"Es gab ein Problem:\n{e}")

@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
-    QTableWidget, QTableWidgetItem, QSpinBox, QDoubleSpinBox,
-    QWidget, QHBoxLayout, QLabel, QAbstractItemView, QHeaderView
+    QTableWidget, QTableWidgetItem, QSpinBox, QDoubleSpinBox, QVBoxLayout, QAbstractScrollArea,
+    QWidget, QHBoxLayout, QLabel, QAbstractItemView, QHeaderView, QSizePolicy
 )
 from PySide6.QtCore import Qt
 from .widgets import HoverDeleteButton
@@ -9,7 +9,19 @@ class InvoiceTable(QTableWidget):
     def __init__(self):
         super().__init__(0, 4)
         self.setHorizontalHeaderLabels(["Produkt", "Menge", "Einzelpreis (€)", "Summe (€)"])
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)  # Produkt
+        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Menge
+        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Einzelpreis
+        self.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)  # Summe
+
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+
+
+        self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContentsOnFirstShow)
+        self.setMinimumWidth(800)
+
         self.verticalHeader().setVisible(False)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -18,6 +30,8 @@ class InvoiceTable(QTableWidget):
 
         self._sum_labels = {}
         self._delete_buttons = {}
+
+        self.setWordWrap(True)
 
     def add_product(self, name, price):
         # Check for duplicates
@@ -32,13 +46,23 @@ class InvoiceTable(QTableWidget):
         row = self.rowCount()
         self.insertRow(row)
 
-        # Product name
-        self.setItem(row, 0, QTableWidgetItem(name))
+        product_item = QTableWidgetItem(name)
+        product_item.setFlags(product_item.flags() & ~Qt.ItemIsEditable)
+        product_item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        product_item.setToolTip(name)
+        product_item.setFont(self.font())
+        product_item.setSizeHint(product_item.sizeHint())
+        self.setItem(row, 0, product_item)
+        self.resizeRowToContents(row)
 
         # Quantity
         qty_widget = QSpinBox()
         qty_widget.setValue(1)
         qty_widget.setMinimum(1)
+
+        qty_widget.setMinimumWidth(100)
+        qty_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
         qty_widget.valueChanged.connect(lambda _: self.update_row_sum(row)) 
         self.setCellWidget(row, 1, qty_widget)
 
@@ -46,7 +70,12 @@ class InvoiceTable(QTableWidget):
         price_widget = QDoubleSpinBox() 
         price_widget.setDecimals(2)
         price_widget.setMinimum(0)
+        price_widget.setMaximum(float("inf"))
         price_widget.setValue(price)
+
+        price_widget.setMinimumWidth(100)
+        price_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
         price_widget.valueChanged.connect(lambda _: self.update_row_sum(row))
         self.setCellWidget(row, 2, price_widget)
 
@@ -70,6 +99,15 @@ class InvoiceTable(QTableWidget):
         self._sum_labels[row] = sum_label
         self._delete_buttons[row] = delete_btn
         self.update_totals()
+
+        self.resizeRowsToContents()
+        self.resizeColumnsToContents()
+
+        header = self.horizontalHeader()
+        for col in range(self.columnCount()):
+            header.setSectionResizeMode(col, QHeaderView.Interactive)
+
+        self.viewport().update()
 
     def get_button_row(self, btn):
         """Return the row index of a given delete button."""
