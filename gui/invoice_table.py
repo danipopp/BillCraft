@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import (
     QTableWidget, QTableWidgetItem, QSpinBox, QDoubleSpinBox, QAbstractScrollArea,
-    QWidget, QHBoxLayout, QLabel, QAbstractItemView, QHeaderView, QSizePolicy,
-    QFontMetrics
+    QWidget, QHBoxLayout, QLabel, QAbstractItemView, QHeaderView, QSizePolicy
 )
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QFontMetrics
 from .widgets import HoverDeleteButton
 
 
