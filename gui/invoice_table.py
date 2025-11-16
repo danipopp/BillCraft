@@ -1,19 +1,23 @@
 from PySide6.QtWidgets import (
-    QTableWidget, QTableWidgetItem, QSpinBox, QDoubleSpinBox, QVBoxLayout, QAbstractScrollArea,
-    QWidget, QHBoxLayout, QLabel, QAbstractItemView, QHeaderView, QSizePolicy
+    QTableWidget, QTableWidgetItem, QSpinBox, QDoubleSpinBox, QAbstractScrollArea,
+    QWidget, QHBoxLayout, QLabel, QAbstractItemView, QHeaderView, QSizePolicy,
+    QFontMetrics
 )
 from PySide6.QtCore import Qt
 from .widgets import HoverDeleteButton
 
+
 class InvoiceTable(QTableWidget):
     def __init__(self):
         super().__init__(0, 4)
+
         self.setHorizontalHeaderLabels(["Produkt", "Menge", "Einzelpreis (€)", "Summe (€)"])
 
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)  # Produkt
-        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Menge
-        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)  # Einzelpreis
-        self.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)  # Summe
+        # Initial resize modes (later switched to Interactive)
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Interactive)
+        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
@@ -28,11 +32,59 @@ class InvoiceTable(QTableWidget):
         self.setMouseTracking(True)
         self.cellEntered.connect(self.on_table_hover)
 
+        self.setWordWrap(True)
+
         self._sum_labels = {}
         self._delete_buttons = {}
 
-        self.setWordWrap(True)
+        # Default max width for product column (updated on window resize)
+        self._product_max_width = 250
 
+    # ---------------------------------------------------------
+    # CALCULATE TEXT WIDTH (PIXELS)
+    # ---------------------------------------------------------
+    def calculate_text_width(self, text: str) -> int:
+        metrics = QFontMetrics(self.font())
+        return metrics.horizontalAdvance(text) + 20  # padding
+
+    # ---------------------------------------------------------
+    # ADJUST PRODUCT COLUMN WIDTH (clamped to max width)
+    # ---------------------------------------------------------
+    def adjust_product_column_width(self):
+        widest = 0
+
+        for row in range(self.rowCount()):
+            item = self.item(row, 0)
+            if item:
+                w = self.calculate_text_width(item.text())
+                widest = max(widest, w)
+
+        # Apply max width protection
+        self.setColumnWidth(0, min(widest, self._product_max_width))
+
+    # ---------------------------------------------------------
+    # RESIZE EVENT → updates max width + fixes table live
+    # ---------------------------------------------------------
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+
+        viewport_width = self.viewport().width()
+
+        used_by_other_cols = (
+            self.columnWidth(1) +
+            self.columnWidth(2) +
+            self.columnWidth(3) +
+            40
+        )
+
+        self._product_max_width = max(150, viewport_width - used_by_other_cols)
+
+        # Re-apply the limit
+        self.adjust_product_column_width()
+
+    # --------------------------
+    # ADD PRODUCT
+    # --------------------------
     def add_product(self, name, price):
         # Check for duplicates
         for row in range(self.rowCount()):
@@ -46,6 +98,7 @@ class InvoiceTable(QTableWidget):
         row = self.rowCount()
         self.insertRow(row)
 
+        # PRODUCT NAME (with wrapping)
         product_item = QTableWidgetItem(name)
         product_item.setFlags(product_item.flags() & ~Qt.ItemIsEditable)
         product_item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
@@ -53,9 +106,15 @@ class InvoiceTable(QTableWidget):
         product_item.setFont(self.font())
         product_item.setSizeHint(product_item.sizeHint())
         self.setItem(row, 0, product_item)
-        self.resizeRowToContents(row)
 
-        # Quantity
+        # Resize to fit content first
+        self.resizeColumnToContents(0)
+
+        # Then cap to max width
+        self.setColumnWidth(0, min(self.columnWidth(0), self._product_max_width))
+
+        # --------------------------
+        # QUANTITY
         qty_widget = QSpinBox()
         qty_widget.setValue(1)
         qty_widget.setMinimum(1)
@@ -98,19 +157,22 @@ class InvoiceTable(QTableWidget):
 
         self._sum_labels[row] = sum_label
         self._delete_buttons[row] = delete_btn
-        self.update_totals()
 
         self.resizeRowsToContents()
         self.resizeColumnsToContents()
 
+        # Reapply max width constraint after auto-resize
+        self.setColumnWidth(0, min(self.columnWidth(0), self._product_max_width))
+
+        # Set all columns interactive afterwards
         header = self.horizontalHeader()
         for col in range(self.columnCount()):
             header.setSectionResizeMode(col, QHeaderView.Interactive)
 
         self.viewport().update()
+        self.update_totals()
 
     def get_button_row(self, btn):
-        """Return the row index of a given delete button."""
         for row in range(self.rowCount()):
             widget = self.cellWidget(row, 3)
             if widget:
@@ -149,12 +211,7 @@ class InvoiceTable(QTableWidget):
         price_widget = self.cellWidget(row, 2)
         sum_label = self._sum_labels.get(row)
 
-        if not qty_widget or not price_widget or not sum_label:
-            return
-
-        qty = qty_widget.value()
-        price = price_widget.value()
-        total = qty * price
+        total = qty_widget.value() * price_widget.value()
         sum_label.setText(f"{total:.2f}")
         self.update_totals()
 

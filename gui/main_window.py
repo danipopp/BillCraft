@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
 
         container = QWidget()
         container_layout = QVBoxLayout(container)
+        container_layout.setContentsMargins(0, 0, 0, 0)
         container_layout.addWidget(self.table)
 
         scroll.setWidget(container)
