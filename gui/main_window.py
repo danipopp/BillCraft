@@ -50,6 +50,7 @@ class MainWindow(QMainWindow):
         right_layout = QVBoxLayout()
         right_layout.addWidget(QLabel("Rechnungstabelle:"))
         self.table = InvoiceTable()
+        self.table.parent_window = self
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
 
@@ -62,10 +63,19 @@ class MainWindow(QMainWindow):
 
         right_layout.addWidget(scroll)
 
-        self.table.total_label = QLabel("Gesamtsumme: 0.00 €")
-        self.table.total_label.setAlignment(Qt.AlignRight)
-        right_layout.addWidget(self.table.total_label)
+        # ---- Total summary labels ----
+        self.sum_netto_label = QLabel("Zwischensumme (Netto): 0.00 €")
+        self.sum_netto_label.setAlignment(Qt.AlignRight)
 
+        self.sum_tax_label = QLabel("MwSt (19%): 0.00 €")
+        self.sum_tax_label.setAlignment(Qt.AlignRight)
+
+        self.sum_brutto_label = QLabel("Gesamtsumme (Brutto): 0.00 €")
+        self.sum_brutto_label.setAlignment(Qt.AlignRight)
+
+        right_layout.addWidget(self.sum_netto_label)
+        right_layout.addWidget(self.sum_tax_label)
+        right_layout.addWidget(self.sum_brutto_label)
 
         # ---- Customer selection ----
         customer_select_layout = QVBoxLayout()

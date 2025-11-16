@@ -217,14 +217,22 @@ class InvoiceTable(QTableWidget):
 
     def update_totals(self):
         """Sum all rows."""
-        total = 0.0
+        netto = 0.0
         for row, label in self._sum_labels.items():
             try:
-                total += float(label.text())
+                netto += float(label.text())
             except ValueError:
                 pass
-        if hasattr(self, 'total_label'):
-            self.total_label.setText(f"Gesamtsumme: {total:.2f} €")
+        mwst = netto * 0.19
+        brutto = netto + mwst
+
+        if hasattr(self.parent_window, 'sum_netto_label'):
+            self.parent_window.sum_netto_label.setText(f"Zwischensumme (Netto): {netto:.2f} €")
+        if hasattr(self.parent_window, 'sum_tax_label'):
+            self.parent_window.sum_tax_label.setText(f"MwSt (19%): {mwst:.2f} €")
+        if hasattr(self.parent_window, 'sum_brutto_label'):
+            self.parent_window.sum_brutto_label.setText(f"Gesamtsumme (Brutto): {brutto:.2f} €")
+
 
     def on_table_hover(self, row, column):
         # Hide all buttons first
