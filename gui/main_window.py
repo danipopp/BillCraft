@@ -10,6 +10,7 @@ from .app_menu_bar import AppMenuBar
 from pdf.invoice_generator import InvoiceGenerator
 from database.db import get_connection
 from gui.custumer_window import CustomerWindow
+from gui.business_info_window import BusinessInfoWindow
 import csv
 
 
@@ -165,6 +166,7 @@ class MainWindow(QMainWindow):
         self.menu_bar.customer_window.connect(self.open_customer_window)
         self.menu_bar.select_logo.connect(self.choose_logo)
         self.menu_bar.import_products.connect(self.import_products_from_csv)
+        self.menu_bar.business_info.connect(self.open_business_info_window)
 
     # -------------------------------------------------------------
     # MENU ACTION HANDLERS
@@ -445,3 +447,8 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             QMessageBox.critical(self, "Fehler beim Import", f"Es gab ein Problem:\n{e}")
+
+    def open_business_info_window(self):
+        self.business_window = BusinessInfoWindow()
+        self.business_window.show()
+

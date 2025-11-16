@@ -16,6 +16,7 @@ class AppMenuBar(QMenuBar):
     export_products = Signal()
     customer_window = Signal()
     select_logo = Signal()
+    business_info = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -63,6 +64,11 @@ class AppMenuBar(QMenuBar):
         logo_action = QAction("Select Logo", self)
         logo_action.triggered.connect(self.select_logo.emit)
         product_menu.addAction(logo_action)
+
+        business_info_action = QAction("Firmendaten", self)
+        business_info_action.triggered.connect(self.business_info.emit)
+        product_menu.addAction(business_info_action)
+
 
         self.addMenu(product_menu)
 

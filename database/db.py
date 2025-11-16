@@ -67,5 +67,23 @@ def create_tables():
         )
     ''')
 
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS business_info (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            company_name TEXT,
+            address TEXT,
+            vat_id TEXT,
+            phone TEXT,
+            fax TEXT,
+            email TEXT,
+            website TEXT,
+            bank_name TEXT,
+            iban TEXT,
+            bic TEXT,
+            account_holder TEXT
+        )
+       
+    ''')
+
     conn.commit()
     conn.close()
