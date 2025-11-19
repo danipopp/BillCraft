@@ -9,6 +9,7 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
 from functools import partial
+from database.db import get_connection
 import os   
 import io
 
@@ -41,9 +42,12 @@ class InvoiceGenerator:
 
         y = height - 50 * mm
 
+        buissiness = self.load_bussiness_info()
+
         # --- Company Header
-        company_name = "Daniel Popp GmbH | "
-        company_address = "Schiedenweg 22 | 88432 München"
+        company_name = buissiness["company_name"]
+        company_address = buissiness["address"]
+        company_city_id = buissiness["city_id"]
 
         # --- Logo path
         logo_width = 35 * mm
@@ -71,7 +75,7 @@ class InvoiceGenerator:
         # --- Company Info
         pdf.setFont("Helvetica", 10)
         pdf.setFillColor(colors.grey)
-        pdf.drawString(25 * mm, y, company_name + company_address)
+        pdf.drawString(25 * mm, y, company_name + " | " + company_address + " | " + company_city_id)
         pdf.setFillColor(colors.black)
 
         y -= 15 * mm
@@ -318,3 +322,41 @@ class InvoiceGenerator:
         except Exception as e:
             print(f"⚠️ Error loading customer: {e}")
             return None
+        
+    def load_bussiness_info(self):
+        conn = get_connection()
+        c = conn.cursor()
+        c.execute("SELECT company_name, address, city_id, vat_id, phone, fax, email, website, bank_name, iban, bic, account_holder FROM business_info WHERE id = 1")
+        row = c.fetchone()
+        conn.close()
+
+        if row:
+            return {
+                "company_name": row[0] or "",
+                "address": row[1] or "",
+                "city_id": row[2] or "",
+                "vat_id": row[3] or "",
+                "phone": row[4] or "",
+                "fax": row[5] or "",
+                "email": row[6] or "",
+                "website": row[7] or "",
+                "bank_name": row[8] or "",
+                "iban": row[9] or "",
+                "bic": row[10] or "",
+                "account_holder": row[11] or "",
+            }
+        
+        return {
+            "company_name": "",
+            "address": "",
+            "city_id": "",
+            "vat_id": "",
+            "phone": "",
+            "fax": "",
+            "email": "",
+            "website": "",
+            "bank_name": "",
+            "iban": "",
+            "bic": "",
+            "account_holder": "",
+        }

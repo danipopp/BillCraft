@@ -72,6 +72,7 @@ def create_tables():
             id INTEGER PRIMARY KEY CHECK (id = 1),
             company_name TEXT,
             address TEXT,
+            city_id TEXT,
             vat_id TEXT,
             phone TEXT,
             fax TEXT,

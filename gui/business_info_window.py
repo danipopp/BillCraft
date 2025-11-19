@@ -17,6 +17,7 @@ class BusinessInfoWindow(QWidget):
 
         self.company_name = QLineEdit()
         self.address = QLineEdit()
+        self.city_id = QLineEdit()
         self.vat_id = QLineEdit()
         self.phone = QLineEdit()
         self.fax = QLineEdit()
@@ -29,6 +30,7 @@ class BusinessInfoWindow(QWidget):
 
         form.addRow("Firmenname:", self.company_name)
         form.addRow("Adresse:", self.address)
+        form.addRow("City_Id:", self.city_id)
         form.addRow("USt-IdNr:", self.vat_id)
         form.addRow("Telefon:", self.phone)
         form.addRow("Fax:", self.fax)
@@ -58,11 +60,12 @@ class BusinessInfoWindow(QWidget):
         conn.close()
 
         if row:
-            (_, company_name, address, vat_id, phone, fax, email,
+            (_, company_name, address, city_id, vat_id, phone, fax, email,
              website, bank_name, iban, bic, account_holder) = row
 
             self.company_name.setText(company_name or "")
             self.address.setText(address or "")
+            self.city_id.setText(city_id or "")
             self.vat_id.setText(vat_id or "")
             self.phone.setText(phone or "")
             self.fax.setText(fax or "")
@@ -82,13 +85,14 @@ class BusinessInfoWindow(QWidget):
 
         c.execute("""
             INSERT OR REPLACE INTO business_info (
-                id, company_name, address, vat_id, phone, fax, email,
+                id, company_name, address, city_id, vat_id, phone, fax, email,
                 website, bank_name, iban, bic, account_holder
             )
-            VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             self.company_name.text(),
             self.address.text(),
+            self.city_id.text(),
             self.vat_id.text(),
             self.phone.text(),
             self.fax.text(),
