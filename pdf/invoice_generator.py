@@ -211,6 +211,8 @@ class InvoiceGenerator:
         pdf.drawString(25 * mm, y, "Vielen Dank für Ihren Einkauf!")
         pdf.setFillColor(colors.black)
 
+        self.draw_footer(pdf, buissiness)
+
         pdf.showPage()
         pdf.save()
 
@@ -360,3 +362,50 @@ class InvoiceGenerator:
             "bic": "",
             "account_holder": "",
         }
+
+    def draw_footer(self, pdf, business_info):
+        """
+        Draw footer with company info in multiple columns, only on the last page.
+        Adds a grey line above and a black line below.
+        """
+        width, height = A4
+        footer_y = 20 * mm  # bottom of the footer
+        col1_x = 25 * mm
+        col2_x = 75 * mm
+        col3_x = 125 * mm
+        col4_x = 175 * mm
+
+        # --- Grey line above footer
+        pdf.setStrokeColor(colors.grey)
+        pdf.setLineWidth(0.5)
+        pdf.line(25 * mm, footer_y + 39, width - 25 * mm, footer_y + 39)
+
+        pdf.setFont("Helvetica", 8)
+        pdf.setFillColor(colors.grey)
+
+        # --- Column 1
+        pdf.drawString(col1_x, footer_y + 30, business_info["company_name"])
+        pdf.drawString(col1_x, footer_y + 20, business_info["address"])
+        pdf.drawString(col1_x, footer_y + 10, business_info["city_id"])
+        pdf.drawString(col1_x, footer_y, f"Ust-IdNr.: {business_info['vat_id']}")
+
+        # --- Column 2
+        pdf.drawString(col2_x, footer_y + 30, f"Tel.: {business_info['phone']}")
+        pdf.drawString(col2_x, footer_y + 20, f"Fax: {business_info['fax']}")
+        pdf.drawString(col2_x, footer_y + 10, f"E-Mail: {business_info['email']}")
+        pdf.drawString(col2_x, footer_y, f"Web: {business_info['website']}")
+
+        # --- Column 3
+        pdf.drawString(col3_x, footer_y + 30, business_info["bank_name"])
+        pdf.drawString(col3_x, footer_y + 20, f"IBAN: {business_info['iban']}")
+        pdf.drawString(col3_x, footer_y + 10, f"BIC: {business_info['bic']}")
+        pdf.drawString(col3_x, footer_y, f"Kto. Inh.: {business_info['account_holder']}")
+
+        # --- Column 4 (optional)
+        pdf.drawString(col4_x, footer_y + 30, "Powered by YourAppName")
+
+        # --- Black line below footer
+        pdf.setStrokeColor(colors.black)
+        pdf.line(25 * mm, footer_y - 4, width - 25 * mm, footer_y - 4)
+
+        pdf.setFillColor(colors.black)
