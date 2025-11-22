@@ -26,6 +26,6 @@ jobs:
         pip install pytest  # ensure pytest is available
 
     - name: Run tests
+      working-directory: tests
       run: |
         pytest
-        working-directory: tests
